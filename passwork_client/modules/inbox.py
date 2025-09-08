@@ -1,6 +1,5 @@
-from base64 import b64encode
-from ..utils import get_encryption_key, decrypt_item, decrypt_and_save_item_attachment
-from ..crypto import rsa_encrypt, rsa_decrypt, encrypt_aes, decrypt_aes
+from ..utils import decrypt_item, decrypt_and_save_item_attachment
+from ..crypto import rsa_decrypt
 
 class Inbox:
     """

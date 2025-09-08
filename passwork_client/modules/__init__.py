@@ -8,6 +8,11 @@ from .vault import Vault
 from .inbox import Inbox
 from .user import User
 from .shortcut import Shortcut
+from .snapshot import Snapshot
+from .batch import Batch
+from .link import Link
+from .vault_type import VaultType
+from .app import App
 
 __all__ = [
     'ApiClient', 
@@ -17,5 +22,10 @@ __all__ = [
     'Vault',
     'Inbox',
     'User',
-    'Shortcut'
-] 
+    'Shortcut',
+    'Snapshot'
+    'Batch',
+    'Link',
+    'VaultType',
+    'App'
+]

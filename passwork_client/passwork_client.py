@@ -8,12 +8,15 @@ from .modules.master_key import MasterKeyManager
 from .modules.session import SessionManager
 from .modules.link import Link
 from .modules.batch import Batch
+from .modules.snapshot import Snapshot
+from .modules.vault_type import VaultType
+from .modules.app import App
 from .exceptions import PassworkError
 import urllib3
 from urllib3.exceptions import InsecureRequestWarning
 
 
-class PassworkClient(ApiClient, MasterKeyManager, SessionManager, Item, Vault, Inbox, User, Shortcut, Link, Batch):
+class PassworkClient(ApiClient, MasterKeyManager, SessionManager, Item, Vault, Inbox, User, Shortcut, Link, Batch, Snapshot, VaultType, App):
     """
     A client for interacting with the Passwork API.
     """
@@ -43,4 +46,6 @@ class PassworkClient(ApiClient, MasterKeyManager, SessionManager, Item, Vault, I
         
         # Initialize SessionManager variables
         self.session_path = None
-        self.session_encryption_key = None 
+        self.session_encryption_key = None
+
+        App.__init__(self)

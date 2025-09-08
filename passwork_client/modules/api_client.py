@@ -1,7 +1,6 @@
 import requests
 import base64
 import json
-import copy
 from ..exceptions import PassworkError
 
 class ApiClient:
@@ -56,22 +55,22 @@ class ApiClient:
     def _process_response(self, response):
         """Process API response and handle errors."""
         data = response.json()
-        result = {}
-        
-        if data:
+        result = data
+
+        if data and type(data) == dict:
             format = data.get("format", "")
             if format == "base64":
                 content = base64.b64decode(data.get("content", "")).decode("utf-8")
                 result = json.loads(content)
             else:
                 result = data
-                
+
         if response.status_code != 200:
             error_data = result.get("errors", [])
             if any(err.get("code") == "accessTokenExpired" for err in error_data):
                 # Let the caller handle token expiration
                 return {"_token_expired": True, "errors": error_data}
-            
+
             error_messages = []
             for err in error_data:
                 if "field" in err and err['field']:

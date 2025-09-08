@@ -56,7 +56,7 @@ def main():
     api_parser.add_argument("--master-key", help="Passwork master key for decryption")
     api_parser.add_argument("--no-ssl-verify", action="store_true", help="Disable SSL certificate verification")
     # API specific arguments
-    api_parser.add_argument("--method", required=True, choices=["GET", "POST", "PUT", "DELETE"], help="HTTP method")
+    api_parser.add_argument("--method", required=True, choices=["GET", "POST", "PUT", "PATCH", "DELETE"], help="HTTP method")
     api_parser.add_argument("--endpoint", required=True, help="API endpoint (e.g. v1/items) without leading /api/")
     api_parser.add_argument("--params", help="JSON string of parameters to pass to the API call")
     api_parser.add_argument("--field", help="Field to extract from the API response")

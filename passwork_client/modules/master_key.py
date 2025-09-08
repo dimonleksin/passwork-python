@@ -2,7 +2,6 @@ import hashlib
 import base64
 from pbkdf2 import PBKDF2
 from ..crypto import decrypt_aes
-from ..exceptions import PassworkError
 
 class MasterKeyManager:
     """

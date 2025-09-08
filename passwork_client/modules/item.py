@@ -1,12 +1,10 @@
-import json
 from ..crypto import encrypt_aes
 from ..utils import (
     encrypt_item_customs,
     validate_item_customs,
     format_item_attachments,
     decrypt_item, get_encryption_key,
-    decrypt_item_attachments, decrypt_item_customs,
-    decrypt_and_save_item_attachment
+    decrypt_item_customs, decrypt_and_save_item_attachment
 )
 
 class Item:

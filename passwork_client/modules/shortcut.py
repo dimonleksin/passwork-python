@@ -1,5 +1,5 @@
-from ..crypto import encrypt_aes, decrypt_aes
-from ..utils import get_encryption_key, decrypt_and_save_item_attachment
+from ..crypto import encrypt_aes
+from ..utils import get_encryption_key
 
 class Shortcut:
     """

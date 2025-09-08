@@ -1,3 +1,4 @@
+import os
 from passwork_client import PassworkClient
 
 # Configuration
@@ -16,14 +17,14 @@ except Exception as e:
     print(f"Error: {e}")
     exit(1)
 
-# Example: Delete item
+# Example: Get snapshot
 try:
-    # ID of the item to delete
     ITEM_ID = ""
-    
-    # Delete the item
-    bin_item_id = passwork.delete_item(ITEM_ID)
-    print(f"Item deleted. Bin item ID: {bin_item_id}")
-    
+    SNAPSHOT_ID = ""
+    DOWNLOAD_PATH = os.path.join("./attachments", SNAPSHOT_ID)
+
+    snapshot = passwork.get_snapshot(ITEM_ID, SNAPSHOT_ID)
+    #passwork.download_snapshot_attachments(snapshot, DOWNLOAD_PATH)
+    print(f"Decrypted item: {snapshot}")
 except Exception as e:
     print(f"Error: {e}")

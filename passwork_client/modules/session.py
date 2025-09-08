@@ -1,7 +1,6 @@
 import os
 import json
 import base64
-import requests
 from ..crypto import encrypt_aes, decrypt_aes
 
 class SessionManager:

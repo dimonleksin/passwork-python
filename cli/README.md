@@ -146,11 +146,11 @@ passwork-cli api [options]
 
 The `api` command requires the following arguments:
 
-| Argument | Description |
-|----------|-------------|
-| `--method` | HTTP method (GET, POST, PUT, DELETE) |
-| `--endpoint` | API endpoint (e.g., v1/vaults) |
-| `--params` | JSON string of parameters (optional) |
+| Argument | Description                                   |
+|----------|-----------------------------------------------|
+| `--method` | HTTP method (GET, POST, PUT, PATCH, DELETE)   |
+| `--endpoint` | API endpoint (e.g., v1/vaults)                |
+| `--params` | JSON string of parameters (optional)          |
 | `--field` | Field to extract from the response (optional) |
 
 ### How It Works

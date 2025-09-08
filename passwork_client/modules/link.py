@@ -1,4 +1,4 @@
-from ..crypto import (generate_key, get_hash, encrypt_aes, decrypt_aes)
+from ..crypto import generate_key, get_hash, encrypt_aes, decrypt_aes
 from ..utils import get_encryption_key
 from ..enums.link_type_enum import LinkType
 from ..enums.link_expiration_time_enum import LinkExpirationTime

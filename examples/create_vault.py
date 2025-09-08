@@ -1,7 +1,6 @@
-import sys
-import os
 from passwork_client import PassworkClient
 
+# This example is for older versions below 7.0.11
 # Configuration
 ACCESS_TOKEN = ""
 REFRESH_TOKEN = "" # Optional (if you need to refresh access token)

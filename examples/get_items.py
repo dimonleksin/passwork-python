@@ -1,5 +1,3 @@
-import sys
-import os
 from passwork_client import PassworkClient
 
 # Configuration
@@ -23,6 +21,6 @@ try:
     ITEM_IDS = ["...", "..."]
 
     items = passwork.get_items(ITEM_IDS)
-    print(f"Decrypted item: {items}")
+    print(f"Decrypted items: {items}")
 except Exception as e:
     print(f"Error: {e}")

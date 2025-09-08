@@ -1,5 +1,3 @@
-import sys
-import os
 # import json - Removed
 from passwork_client import PassworkClient
 

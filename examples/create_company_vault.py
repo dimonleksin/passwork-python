@@ -1,4 +1,5 @@
 from passwork_client import PassworkClient
+from passwork_client.exceptions import PassworkError
 
 # Configuration
 ACCESS_TOKEN = ""
@@ -16,14 +17,14 @@ except Exception as e:
     print(f"Error: {e}")
     exit(1)
 
-# Example: Delete item
+# Example: Create company vault
 try:
-    # ID of the item to delete
-    ITEM_ID = ""
-    
-    # Delete the item
-    bin_item_id = passwork.delete_item(ITEM_ID)
-    print(f"Item deleted. Bin item ID: {bin_item_id}")
-    
+    vault_name = "Python Vault"
+    company_vault_type = passwork.find_vault_type("company")
+    if not company_vault_type:
+        raise PassworkError("Default 'company' vault type not found.")
+
+    vault_id = passwork.create_vault(vault_name, company_vault_type["id"])
+    print(f"Vault was created: {vault_id}")
 except Exception as e:
     print(f"Error: {e}")

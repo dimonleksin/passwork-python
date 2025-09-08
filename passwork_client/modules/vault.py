@@ -1,11 +1,18 @@
 from ..crypto import rsa_decrypt, rsa_encrypt, get_hash, b64encode, generate_key, generate_salt
+from ..exceptions import PassworkError
 
 class Vault:
 
-    def create_vault(self, vault_name: str):
+    def create_vault(self, vault_name: str, type_id: str = None):
+
+        if self.find_feature("vaultType") and not type_id:
+            raise PassworkError("The vault type(type_id) parameter is required")
+
         vault = {
             "name": vault_name,
         }
+
+        vault_master_key = ''
         if self.is_encrypt:
             vault_master_key = generate_key()
             salt = generate_salt()
@@ -14,6 +21,10 @@ class Vault:
             vault["masterKeyEncrypted"] = b64encode(master_key_encrypted).decode("utf-8")
             vault["masterKeyHash"] = get_hash(f"{vault_master_key}{salt}")
             vault["salt"] = salt
+
+        if type_id:
+            vault["typeId"] = type_id
+            vault["administratorsKeys"] = self.get_vault_type_admins_keys(type_id, vault_master_key)
 
         response = self.call("POST", "/api/v1/vaults", vault)
         return response["id"]

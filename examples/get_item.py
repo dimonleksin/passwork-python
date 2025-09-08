@@ -1,4 +1,3 @@
-import sys
 import os
 from passwork_client import PassworkClient
 

@@ -3,7 +3,7 @@ import random
 import hashlib
 import binascii
 from base64 import b64encode, b64decode
-from cryptography.hazmat.primitives import padding, serialization
+from cryptography.hazmat.primitives import padding, serialization, hashes
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.asymmetric import padding as padding_rsa
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -187,10 +187,21 @@ def rsa_decrypt(data, private_key):
         private_key.encode(),  # Convert to bytes
         password=None
     )
-    decrypted_data = private_key.decrypt(
-        b64decode(data),
-        padding_rsa.PKCS1v15()
-    )
+    try:
+        decrypted_data = private_key.decrypt(
+            b64decode(data),
+            padding_rsa.OAEP(
+                mgf=padding_rsa.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None
+            )
+        )
+    except Exception as e:
+        decrypted_data = private_key.decrypt(
+            b64decode(data),
+            padding_rsa.PKCS1v15()
+        )
+
     return decrypted_data
 
 def rsa_encrypt(data, public_key):
@@ -198,11 +209,21 @@ def rsa_encrypt(data, public_key):
         public_key.encode(),  # Convert to bytes
         None
     )
-    decrypted_data = public_key.encrypt(
-        data.encode(),
-        padding_rsa.PKCS1v15()
-    )
-    return decrypted_data
+    try:
+        encrypted_data = public_key.encrypt(
+            data.encode(),
+            padding_rsa.OAEP(
+                mgf=padding_rsa.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None
+            )
+        )
+    except Exception as e:
+        encrypted_data = public_key.encrypt(
+            data.encode(),
+            padding_rsa.PKCS1v15()
+        )
+    return encrypted_data
 
 def generate_rsa_keys(masterKey: str):
     private_key = rsa.generate_private_key(
