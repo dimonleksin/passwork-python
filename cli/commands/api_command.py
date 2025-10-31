@@ -91,4 +91,17 @@ class ApiCallStrategy(PassworkCommand):
                 return data[field_name]
         
         # Field not found or data type not supported
-        return None 
+        return None
+
+    @staticmethod
+    def add_command(subparsers):
+        params = PassworkCommand.base_params() | {
+            "--method": {"required": True, "choices": ["GET", "POST", "PUT", "PATCH", "DELETE"], "help": "HTTP method"},
+            "--endpoint": {"required": True, "help": "API endpoint (e.g. v1/items) without leading /api/"},
+            "--params": {"help": "JSON string of parameters to pass to the API call"},
+            "--field": {"help": "Field to extract from the API response"}
+        }
+
+        parser = subparsers.add_parser("api", help="Make a direct API call to Passwork")
+        for key, value in params.items():
+            parser.add_argument(key, **value)

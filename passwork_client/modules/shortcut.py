@@ -40,13 +40,11 @@ class Shortcut:
         password = shortcut["password"]
         return self.download_item_attachment(password, download_path)
 
-    def search_shortcut(self, query: str = None, tags: list[str] = None, color_codes: list[int] = None, url: str = None,
+    def search_shortcut(self, query: str = None, tags: list[str] = None, color_codes: list[int] = None,
                        vault_ids: list[str] = None, folder_ids: list[str] = None):
         payload = {}
         if query is not None:
             payload["query"] = query
-        if url is not None:
-            payload["url"] = url
         if tags is not None:
             payload["tags"] = tags
         if color_codes is not None:
@@ -60,9 +58,9 @@ class Shortcut:
         search_results = self.call("GET", "/api/v1/shortcuts/search", payload)
         return search_results.get("items", [])
 
-    def search_and_decrypt_shortcut(self, query: str = None, tags: list[str] = None, color_codes: list[int] = None, url: str = None,
+    def search_and_decrypt_shortcut(self, query: str = None, tags: list[str] = None, color_codes: list[int] = None,
                                     vault_ids: list[str] = None, folder_ids: list[str] = None):
-        search_results = self.search_shortcut(query, tags, color_codes, url, vault_ids, folder_ids)
+        search_results = self.search_shortcut(query, tags, color_codes, vault_ids, folder_ids)
 
         # Extract item IDs from search results
         item_ids = [item["shortcut"]["id"] for item in search_results]

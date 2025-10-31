@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 import sys
-import json
 import argparse
 import shlex
-import os
 import warnings
 import urllib3
 
@@ -29,41 +27,12 @@ def main():
     
     # Create subparsers for different modes
     subparsers = parser.add_subparsers(dest="command", help="Command mode")
-    
-    # 1. Execute command mode
-    cmd_parser = subparsers.add_parser("exec", help="Execute a command with passwords as environment variables")
-    # Common arguments for exec command
-    cmd_parser.add_argument("--host", help="Passwork API host URL")
-    cmd_parser.add_argument("--token", help="Passwork access token")
-    cmd_parser.add_argument("--refresh-token", help="Passwork refresh token")
-    cmd_parser.add_argument("--master-key", help="Passwork master key for decryption")
-    cmd_parser.add_argument("--no-ssl-verify", action="store_true", help="Disable SSL certificate verification")
-    # Password identification (one of these must be used)
-    pwd_group = cmd_parser.add_argument_group("Password identification (at least one required)")
-    pwd_group.add_argument("--password-id", help="ID of password(s) to retrieve (comma-separated for multiple)")
-    pwd_group.add_argument("--shortcut-id", help="ID of shortcut(s) to retrieve (comma-separated for multiple)")
-    pwd_group.add_argument("--vault-id", help="ID(s) of vault(s) to search in (comma-separated for multiple)")
-    pwd_group.add_argument("--folder-id", help="ID(s) of folder(s) to search in (comma-separated for multiple)")
-    pwd_group.add_argument("--tags", help="Tag(s) to search for (comma-separated for multiple)")
-    cmd_parser.add_argument("--cmd", help="Command to execute")
-    
-    # 2. API Call mode
-    api_parser = subparsers.add_parser("api", help="Make a direct API call to Passwork")
-    # Common arguments for api command
-    api_parser.add_argument("--host", help="Passwork API host URL")
-    api_parser.add_argument("--token", help="Passwork access token")
-    api_parser.add_argument("--refresh-token", help="Passwork refresh token")
-    api_parser.add_argument("--master-key", help="Passwork master key for decryption")
-    api_parser.add_argument("--no-ssl-verify", action="store_true", help="Disable SSL certificate verification")
-    # API specific arguments
-    api_parser.add_argument("--method", required=True, choices=["GET", "POST", "PUT", "PATCH", "DELETE"], help="HTTP method")
-    api_parser.add_argument("--endpoint", required=True, help="API endpoint (e.g. v1/items) without leading /api/")
-    api_parser.add_argument("--params", help="JSON string of parameters to pass to the API call")
-    api_parser.add_argument("--field", help="Field to extract from the API response")
-    
-    # Parse the arguments, but keep unknown ones as command to execute
+
+    for strategy in COMMAND_STRATEGIES.values():
+        strategy.add_command(subparsers)
+
     args, remaining = parser.parse_known_args()
-    
+
     # Handle command for exec mode (Docker-like syntax)
     if args.command == "exec":
         if args.cmd and remaining:
@@ -75,7 +44,26 @@ def main():
         elif not args.cmd:
             print("Error: No command specified. Use --cmd or append command directly", file=sys.stderr)
             sys.exit(1)
-    
+
+    if args.command == "update":
+        # Custom parsing for --custom-* arguments
+        args.customs = []
+        i = 0
+        while i < len(remaining):
+            if remaining[i].startswith("--custom-"):
+                field_name = remaining[i][len("--custom-"):]
+                if "=" in field_name:
+                    args.customs.append({"name": field_name[:field_name.find("=")], "value": field_name[field_name.find("=")+1:], "type": "password"})
+                    i += 1
+                elif i + 1 < len(remaining):
+                    args.customs.append({"name": field_name, "value": remaining[i+1], "type": "password"})
+                    i += 2
+                else:
+                    print(f"Error: Missing value for custom field {field_name}", file=sys.stderr)
+                    sys.exit(1)
+            else:
+                i += 1
+
     if not args.command:
         parser.print_help()
         sys.exit(1)
@@ -97,7 +85,7 @@ def main():
             sys.exit(1)
             
         strategy = strategy_class()
-        
+
         # Execute the strategy
         exit_code = strategy.execute(client, args)
         sys.exit(exit_code)

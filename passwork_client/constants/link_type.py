@@ -1,5 +1,3 @@
-from enum import StrEnum
-
-class LinkType(StrEnum):
+class LinkType:
     SingleUse = 'single_use'
     Reusable = 'reusable'

@@ -1,7 +1,7 @@
 import requests
 import base64
 import json
-from ..exceptions import PassworkError
+from ..exceptions import PassworkError, PassworkResponseError
 
 class ApiClient:
     """
@@ -65,7 +65,7 @@ class ApiClient:
             else:
                 result = data
 
-        if response.status_code != 200:
+        if response.status_code >= 400:
             error_data = result.get("errors", [])
             if any(err.get("code") == "accessTokenExpired" for err in error_data):
                 # Let the caller handle token expiration
@@ -78,7 +78,7 @@ class ApiClient:
                 else:
                     message = f"{err['message']}"
                 error_messages.append(message)
-            raise PassworkError(str(error_messages), f"api_error:{response.status_code}")
+            raise PassworkResponseError(str(error_messages), response.url, response.request.method, response.status_code)
             
         response.raise_for_status()
         return result
@@ -142,7 +142,8 @@ class ApiClient:
         self.access_token = None
         self.refresh_token = None
 
-        url = f"{self.host}/api/v1/sessions/refresh"
+        endpoint = "/api/v1/sessions/refresh"
+        url = f"{self.host}{endpoint}"
         headers = {"Authorization": f"Bearer {current_token}"}
         if hasattr(self, 'master_key_hash') and self.master_key_hash:
             headers["X-Master-Key-Hash"] = self.master_key_hash
@@ -156,15 +157,15 @@ class ApiClient:
         )
 
         # Process the response manually
-        if response.status_code != 200:
+        if response.status_code >= 400:
             # Handle error
             raise PassworkError(f"Failed to refresh token: {response.status_code}", "refresh_token_failed")
         
         result = self._process_response(response)
-        
+
         self.access_token = result["accessToken"]
         self.refresh_token = result["refreshToken"]
-        
+
         if hasattr(self, 'session_path') and self.session_path and hasattr(self, 'save_session'):
             self.save_session(self.session_path, self.session_encryption_key)
             

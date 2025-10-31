@@ -1,6 +1,4 @@
-from enum import StrEnum
-
-class LinkExpirationTime(StrEnum):
+class LinkExpirationTime:
     Hour = '1 hour'
     Week = '1 week'
     Month = '1 month'

@@ -5,8 +5,19 @@ class VaultType:
     def get_vault_types(self):
         return self.call("GET", "/api/v1/vault-types/all")
 
-    def find_vault_type(self, vault_type_code: str):
-        vault_type = [r for r in self.get_vault_types()["items"] if r.get("code") == vault_type_code]
+    def find_vault_type(self, code: str = None, name: str = None, id: str = None):
+        if code:
+            return self.filter_vault_types("code", code)
+        elif name:
+            return self.filter_vault_types("name", name)
+        elif id:
+            return self.filter_vault_types("id", id)
+
+        return None
+
+    def filter_vault_types(self, key: str, value: str):
+        vault_type = [r for r in self.get_vault_types()["items"] if r.get(key) == value]
+
         if not vault_type:
             return None
 

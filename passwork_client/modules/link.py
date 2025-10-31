@@ -1,11 +1,9 @@
 from ..crypto import generate_key, get_hash, encrypt_aes, decrypt_aes
 from ..utils import get_encryption_key
-from ..enums.link_type_enum import LinkType
-from ..enums.link_expiration_time_enum import LinkExpirationTime
 
 class Link:
 
-    def create_link(self, type: LinkType, expiration_time: LinkExpirationTime, item_id: str = None, shortcut_id: str = None):
+    def create_link(self, type: str, expiration_time: str, item_id: str = None, shortcut_id: str = None):
 
         if shortcut_id:
             shortcut = self.get_shortcut(shortcut_id)
@@ -33,7 +31,9 @@ class Link:
 
             link_key_hash = get_hash(code)
             link_key_encrypted = encrypt_aes(code, encrypted_key)
-            self.encrypt_item(item, code)
+            vault = self.get_vault(item["vaultId"])
+            vault_password = self.get_vault_password(vault)
+            self.encrypt_item(item, code, vault_password)
             if "passwordEncrypted" in item:
                 item_data["passwordEncrypted"] = item["passwordEncrypted"]
 
@@ -52,14 +52,13 @@ class Link:
         if "customs" in item and len(item["customs"]) > 0:
             item_data["customs"] = item["customs"]
 
-
         payload = {
             "itemId": item['id'],
             "itemData": item_data,
             "keyHash": link_key_hash,
             "keyEncrypted": link_key_encrypted,
-            "type": type.value,
-            "expirationTime" : expiration_time.value
+            "type": type,
+            "expirationTime" : expiration_time
         }
 
         if shortcut_id:

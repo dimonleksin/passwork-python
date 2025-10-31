@@ -2,12 +2,14 @@ import os
 import base64
 import re
 import hashlib
+import hmac
+import time
+import struct
 from pathlib import Path
 from .crypto import encrypt_aes, generate_string, decrypt_aes, rsa_decrypt
 
 def is_valid_totp(totp_value: str):
-    regex = r"^([A-Za-z2-7=]{8})+$"
-    return bool(re.match(regex, totp_value))
+    return True
 
 def validate_item_customs(customs: list):
     if any(f["type"] == "totp" and not is_valid_totp(f["value"]) for f in customs):
@@ -130,3 +132,132 @@ def save_attachment(byte_data_content: bytes, filename: str, download_path: str)
     download_path = os.path.join(download_path, filename)
     with open(download_path, "wb") as file:
         file.write(byte_data_content)
+
+def generate_totp(secret: str, algorithm = hashlib.sha1, interval=30, digits=6):
+    # Decode the base32 secret to bytes
+    # Standard base32 decoding requires padding, which is assumed here.
+    # For a robust solution, consider a more complete base32 decoder.
+    secret_bytes = base64.b32decode(secret + "=" * ((8 - len(secret) % 8) % 8))
+
+    # Get the current time step
+    current_time = int(time.time())
+    time_step = current_time // interval
+
+    # Convert the time step to bytes (8-byte big-endian)
+    time_step_bytes = struct.pack(">Q", time_step)
+
+    # Calculate HMAC-SHA1 hash
+    hmac_hash = hmac.new(secret_bytes, time_step_bytes, algorithm).digest()
+
+    # Dynamic Truncation
+    offset = hmac_hash[-1] & 0x0F
+    truncated_hash = struct.unpack(">I", hmac_hash[offset:offset + 4])[0] & 0x7FFFFFFF
+
+    # Generate the TOTP code
+    totp_code = str(truncated_hash % (10 ** digits)).zfill(digits)
+    return totp_code
+
+def generate_totp_by_url(uri: str):
+    # Secret (to be filled in later)
+    secret = None
+
+    # Data we'll parse to the correct constructor
+    otp_data = {}
+
+    parsed_uri = parse_url(uri)
+    if parsed_uri["scheme"] != "otpauth":
+        raise ValueError("Not an otpauth URI")
+
+    # Parse values
+    for key, value in parse_query(parsed_uri["query"]).items():
+        if key == "secret":
+            secret = value
+        elif key == "algorithm":
+            if value == "SHA1":
+                otp_data["algorithm"] = hashlib.sha1
+            elif value == "SHA256":
+                otp_data["algorithm"] = hashlib.sha256
+            elif value == "SHA512":
+                otp_data["algorithm"] = hashlib.sha512
+            else:
+                raise ValueError("Invalid value for algorithm, must be SHA1, SHA256 or SHA512")
+        elif key == "digits":
+            digits = int(value)
+            otp_data["digits"] = digits
+        elif key == "period":
+            otp_data["interval"] = int(value)
+
+    if not secret:
+        raise ValueError("No secret found in URI")
+
+    # Create objects
+    if parsed_uri["netloc"] == "totp":
+        return generate_totp(secret, **otp_data)
+
+    raise ValueError("Not a supported OTP type")
+
+def parse_url(url: str):
+     scheme = None
+     netloc = None
+     path = None
+     query = None
+     fragment = None
+
+     # Extract scheme
+     scheme_end = url.find("://")
+     if scheme_end != -1:
+         scheme = url[:scheme_end]
+         url = url[scheme_end + 3:]
+
+     # Extract fragment
+     fragment_start = url.find("#")
+     if fragment_start != -1:
+         fragment = url[fragment_start + 1:]
+         url = url[:fragment_start]
+
+     # Extract query
+     query_start = url.find("?")
+     if query_start != -1:
+         query = url[query_start + 1:]
+         url = url[:query_start]
+
+     # Extract netloc and path
+     path_start = url.find("/")
+     if path_start != -1:
+         netloc = url[:path_start]
+         path = url[path_start:]
+     else:
+         netloc = url # If no path, the rest is netloc
+
+     return {
+         "scheme": scheme,
+         "netloc": netloc,
+         "path": path,
+         "query": query,
+         "fragment": fragment,
+     }
+
+def parse_query(query_string):
+    """
+    Parses a URL query string into a dictionary without using external libraries.
+    Handles basic key-value pairs and URL-decoded values.
+    """
+    params = {}
+    if not query_string:
+        return params
+
+    # Split by '&' to get individual key-value pairs
+    pairs = query_string.split('&')
+
+    for pair in pairs:
+        # Split by '=' to separate key and value
+        parts = pair.split('=', 1)  # Use 1 to handle values with '='
+        key = parts[0]
+        value = parts[1] if len(parts) > 1 else ''
+
+        # Basic URL decoding (you might need a more robust implementation for complex cases)
+        key = key.replace('+', ' ').replace('%20', ' ') # Example for space
+        value = value.replace('+', ' ').replace('%20', ' ') # Example for space
+
+        params[key] = value
+    return params

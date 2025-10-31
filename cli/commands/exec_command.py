@@ -187,8 +187,7 @@ class ExecuteCommandStrategy(PassworkCommand):
         Rules:
         1. Replace non-alphanumeric with underscore
         2. Ensure starts with a letter
-        3. Convert to uppercase
-        
+
         Args:
             name (str): Original name
             
@@ -203,3 +202,25 @@ class ExecuteCommandStrategy(PassworkCommand):
             sanitized = 'P_' + sanitized
             
         return sanitized
+
+    @staticmethod
+    def add_command(subparsers):
+        parser = subparsers.add_parser("exec", help="Execute a command with passwords as environment variables")
+
+        params = PassworkCommand.base_params()
+        for key, value in params.items():
+            parser.add_argument(key, **value)
+
+        group_param = {
+            "--password-id": {"help": "ID of password(s) to retrieve (comma-separated for multiple)"},
+            "--shortcut-id": {"help": "ID of shortcut(s) to retrieve (comma-separated for multiple)"},
+            "--vault-id": {"help": "ID(s) of vault(s) to search in (comma-separated for multiple)"},
+            "--folder-id": {"help": "ID(s) of folder(s) to search in (comma-separated for multiple)"},
+            "--tags": {"help": "Tag(s) to search for (comma-separated for multiple)"},
+        }
+
+        group = parser.add_argument_group("Password identification (at least one required)")
+        for key, value in group_param.items():
+            group.add_argument(key, **value)
+
+        parser.add_argument("--cmd", help="Command to execute")

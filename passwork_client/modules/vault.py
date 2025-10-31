@@ -38,3 +38,6 @@ class Vault:
 
         vault_key_encrypted = vault["masterKeyEncrypted"]
         return rsa_decrypt(vault_key_encrypted, self.user_private_key).decode()
+
+    def use_key_encryption(self, vault):
+        return bool(vault["masterKeyEncrypted"])
