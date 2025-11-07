@@ -13,10 +13,11 @@ class Item:
         vault_password = self.get_vault_password(vault)
 
         encryption_key = ""
-        if self.use_key_encryption(vault):
-            encryption_key = generate_key()
-        else:
-            encryption_key = vault_password
+        if self.is_encrypt:
+            if self.use_key_encryption(vault):
+                encryption_key = generate_key()
+            else:
+                encryption_key = vault_password
 
         self.encrypt_item(item_data, encryption_key, vault_password)
         self.encrypt_item_customs(item_data, encryption_key)
@@ -32,6 +33,7 @@ class Item:
         vault_password = self.get_vault_password(vault)
 
         item = self.get_item(item_id)
+        encrypted_key = ""
         if self.is_encrypt:
             encrypted_key = get_encryption_key(
                 item["vaultMasterKeyEncrypted"],

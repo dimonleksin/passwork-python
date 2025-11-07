@@ -42,9 +42,10 @@ class TestItem:
         item = mock_encrypted_client.get_item(item_id)
         
         # Verify the method made the correct request
-        mock_encrypted_client._request.assert_called_once_with(
-            "GET", f"/api/v1/items/{item_id}"
-        )
+        mock_encrypted_client._request.assert_called_once()
+        args, kwargs = mock_encrypted_client._request.call_args
+        assert args == ("GET", f"/api/v1/items/{item_id}")
+        assert kwargs.get("params", {}) == {}
         
         # Expected item object after decryption
         expected_item = {
