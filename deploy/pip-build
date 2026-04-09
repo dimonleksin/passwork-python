@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage:
+  ./pip-build clean              # remove build artifacts
+  ./pip-build build              # install tools, build sdist/wheel, twine check
+  REPO=testpypi ./pip-build upload  # upload to TestPyPI (default REPO=pypi)
+  ./pip-build upload             # upload to PyPI
+  REPO=pypi ./pip-build all      # clean + build + upload (REPO controls destination)
+
+Notes:
+  - Set REPO=testpypi to publish to TestPyPI, otherwise defaults to PyPI.
+  - Ensure you have valid PyPI/TestPyPI credentials configured (API token) for twine.
+EOF
+}
+
+clean() {
+  rm -rf dist build ./*.egg-info || true
+}
+
+ensure_tools() {
+  python -m pip install --upgrade build twine >/dev/null
+}
+
+build_pkg() {
+  ensure_tools
+  python -m build
+  twine check dist/*
+}
+
+upload_pkg() {
+  ensure_tools
+  local repo="${REPO:-pypi}"
+  if [[ "${repo}" == "testpypi" ]]; then
+    twine upload --repository testpypi dist/*
+  else
+    twine upload dist/*
+  fi
+}
+
+cmd="${1:-build}"
+case "${cmd}" in
+  clean)
+    clean
+    ;;
+  build)
+    clean
+    build_pkg
+    ;;
+  upload)
+    upload_pkg
+    ;;
+  all)
+    clean
+    build_pkg
+    upload_pkg
+    ;;
+  -h|--help|help)
+    usage
+    ;;
+  *)
+    echo "Unknown command: ${cmd}" >&2
+    usage
+    exit 1
+    ;;
+esac
+
+

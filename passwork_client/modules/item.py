@@ -1,4 +1,4 @@
-from ..crypto import encrypt_aes, rsa_decrypt, generate_key
+from ..crypto import encrypt_aes, generate_key
 from ..utils import (
     encrypt_item_customs,
     validate_item_customs,
@@ -6,6 +6,7 @@ from ..utils import (
     decrypt_item, get_encryption_key,
     decrypt_item_customs, decrypt_and_save_item_attachment
 )
+
 
 class Item:
     def create_item(self, item_data: dict) -> str:
@@ -95,7 +96,7 @@ class Item:
                 )
             else:
                 encrypted_key = ''
-                
+
             # Decrypt the item using the same methods as get_item
             self.decrypt_item(item_data, encrypted_key)
             self.decrypt_item_customs(item_data, encrypted_key)
@@ -104,8 +105,11 @@ class Item:
 
         return decrypted_items
 
-    def search_items(self, query: str = None, tags: list[str] = None, color_codes: list[int] = None,
-               vault_ids: list[str] = None, folder_ids: list[str] = None):
+    def search_items(
+        self, query: str = None, tags: list[str] = None, color_codes: list[int] = None,
+        vault_ids: list[str] = None, folder_ids: list[str] = None
+    ):
+
         # Build payload with only non-None parameters
         payload = {}
         if query is not None:
@@ -118,17 +122,19 @@ class Item:
             payload["vaultIds"] = vault_ids
         if folder_ids is not None:
             payload["folderIds"] = folder_ids
-            
+
         # Make the request using the call method which will handle array formatting
         search_results = self.call("GET", "/api/v1/items/search", payload)
 
         return search_results.get("items", [])
-        
-    def search_and_decrypt(self, query: str = None, tags: list[str] = None, color_codes: list[int] = None,
-                          vault_ids: list[str] = None, folder_ids: list[str] = None):
+
+    def search_and_decrypt(
+        self, query: str | None = None, tags: list[str] | None = None, color_codes: list[int] | None = None,
+        vault_ids: list[str] | None = None, folder_ids: list[str] | None = None
+    ):
         # Get search results
         search_results = self.search_items(query, tags, color_codes, vault_ids, folder_ids)
-        
+
         # Extract item IDs from search results
         item_ids = [item["id"] for item in search_results]
 
@@ -188,7 +194,6 @@ class Item:
 
             if "keyEncrypted" not in item_data:
                 item_data["keyEncrypted"] = encrypt_aes(encryption_key, vault_password)
-
 
     def encrypt_item_customs(self, item_data: dict, encryption_key: str):
         if "customs" in item_data and len(item_data["customs"]) > 0:

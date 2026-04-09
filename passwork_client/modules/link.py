@@ -1,6 +1,7 @@
 from ..crypto import generate_key, get_hash, encrypt_aes, decrypt_aes
 from ..utils import get_encryption_key
 
+
 class Link:
 
     def create_link(self, type: str, expiration_time: str, item_id: str = None, shortcut_id: str = None):
@@ -58,7 +59,7 @@ class Link:
             "keyHash": link_key_hash,
             "keyEncrypted": link_key_encrypted,
             "type": type,
-            "expirationTime" : expiration_time
+            "expirationTime": expiration_time
         }
 
         if shortcut_id:

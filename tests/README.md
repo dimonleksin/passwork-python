@@ -73,12 +73,9 @@ Then open `htmlcov/index.html` in your browser to view the coverage details.
 
 The test suite includes several fixtures defined in `tests/conftest.py`:
 
-- `mock_response`: Creates mock HTTP responses
 - `mock_client`: Provides a PassworkClient with mocked request methods
 - `mock_encrypted_client`: Similar to `mock_client` but with encryption enabled
 - `load_mock_data`: Loads data from JSON files in the mock_data directory
-- `vault_mock_data`: Provides sample vault data
-- `password_mock_data`: Provides sample password data
 
 ## Adding New Tests
 

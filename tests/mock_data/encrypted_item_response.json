@@ -1,0 +1,45 @@
+{
+  "id": "691c354719feeca0c603c2f2",
+  "vaultId": "691c1ec0569fd4826e098512",
+  "folderId": null,
+  "passwordEncrypted": "amt4cwv48xb6pp1h71wmyebk8nn7mw3r6hd3gdup998njy9tc5mp6pj375d48dka9x0p4w34eru58hjgdwrpjrudd4upaubt71x7gx0",
+  "keyEncrypted": "amt4cwv48xb6pp1h5wtq2ca2f0rmcphh5xw5em9h85mp6hu89mt64w1p9ta7mrbuddu6wcud5ctmuh9m5xc5md2t8995mmv1amt54wu171x58wk9d50nchb169d6pyj9f92m2wvp9nj4wju48du3gvuqdtr7maujatjp2j2ue14m6kv2e1h72y1f8twn2wbg9n63cgj4f5j6upht8xbq8vbq7592ydjk9humwn1pe9p6wy3e8t344ubra5t38tk398qpmtbb8ncqmwatamyg",
+  "customs": [
+    {
+      "name": "amt4cwv48xb6pp1h5xp68gjf9nt4rv34exw36xvgb0wmmrbn65634pkc6tjmcu1pdtw3gf8",
+      "value": "amt4cwv48xb6pp1h75vjyk2p5wr3jr9bf9u30vu9cxn32ju5edb6gea8enapjk3r5d2q6f8",
+      "type": "amt4cwv48xb6pp1h5du46u3f8xqk8db36t0pwnu58dq4enkpata7mnk8b8nmyd35dn5qef8"
+    },
+    {
+      "name": "amt4cwv48xb6pp1h75rnmuuk6rw5myhr9533euvqcwnk0daea59nenkmf5b4chkg9n938f8",
+      "value": "amt4cwv48xb6pp1h5d9m4j2974t66n3jd16pcm23emnpckutdcvm4rtb61t46hbf8gv6mj9r8d36apkeb9uk0dtt9xh72h3fagr74kg",
+      "type": "amt4cwv48xb6pp1h75uqcmu9dhc44papd535cmjdb0v6uuua9d64cy1rb5d6gh2bch4ppf8"
+    },
+    {
+      "name": "amt4cwv48xb6pp1h70v4ukj9dtk4cx2tdhpmuhv1a5164vvte1u5guthex73cmkee1566f8",
+      "value": "amt4cwv48xb6pp1h5wvprvb8ct2qjpk4ctkmuvje8wr2ptabcd26rgk9dx8muh3tf50m8m3465qm6hjd8djm4mje9cu6mr9p9mtjytr",
+      "type": "amt4cwv48xb6pp1h718q8m1hd15mgnbfa9pn0u2hb5anjnv3etp4udv7ah838v3jd9q66f8"
+    }
+  ],
+  "attachments": [
+    {
+      "id": "691c354719feeca0c603c2f3",
+      "encryptedKey": "amt4cwv48xb6pp1h5dq4em1kdx7p8kbg8xrmuxug5x430hv7b1cpmwa4d9aqggu68h97mtkh5x75ggk4dxkm4c2461r4rk9bd5anec38b1j50gbpcx1mwt38a524an2gf55pyn9mf53q0hkmb9d42rbncmtq8kv1cd5qehahf5jmpwtbc5unmdbc6gqk0j3nanp38e1ta9342gtmch34ycv6ddm5ev9nehrq8h2a6gu66htj8dp6au9qa1npcdb8f1cpayk9dnukauupa4yg",
+      "name": "test.txt"
+    }
+  ],
+  "name": "name-test",
+  "login": "login-test",
+  "url": "https://example.com",
+  "urls": ["https://example.com", "https://example.local"],
+  "description": "notes test",
+  "tags": [
+    "test",
+    "test-2"
+  ],
+  "fieldsOrder": null,
+  "isDeleted": false,
+  "color": 5,
+  "isFavorite": true,
+  "vaultMasterKeyEncrypted": "asXArz2xu5bRbl+vM+NMtHNvtharYoy1ny4Z6WwoVEeu9Cn1BANR3FK+B//DEOXJHIHOER//LdCo8jCibMJcwXcOTwYtG+zUZ4A50akohl1g3tZMKKR/Fp8rQmr1f37CG1XmpNbMBP5z5+uQOWRni7Ov8av0WSxjYAJsa5EojaU="
+}

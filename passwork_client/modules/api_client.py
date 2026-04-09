@@ -1,7 +1,9 @@
 import requests
 import base64
 import json
+import ssl
 from ..exceptions import PassworkError, PassworkResponseError
+
 
 class ApiClient:
     """
@@ -10,54 +12,53 @@ class ApiClient:
     def __init__(self):
         # No variable initialization here
         pass
-        
-    def call(self, method, endpoint, payload = None, headers = None):
+
+    def call(self, method: str, endpoint: str, payload: dict | None = None, headers: dict | None = None):
         """
         Public method to send general api requests and handle responses.
-        
         Args:
             method (str): HTTP method (GET, POST, PUT, DELETE)
             endpoint (str): API endpoint path
             payload (dict): Data to send with the request
             headers (dict): Custom headers to include in the request
-            
         For GET requests, payload is sent as query parameters with arrays formatted as 'param[]'.
         For other request types (POST, PUT, DELETE), payload is sent as JSON in the request body.
         """
+
         if payload is None:
             payload = {}
-            
+
         kwargs = {}
-        
+
         # Add custom headers if provided
         if headers:
             kwargs["headers"] = headers
-        
+
         # Process parameters based on HTTP method
         if method.upper() == "GET":
             # For GET requests, convert payload to query parameters
             processed_params = {}
-            
+
             for key, value in payload.items():
                 # If it's a list/array, add [] to the key
                 if isinstance(value, (list, tuple)):
                     processed_params[f"{key}[]"] = value
                 else:
                     processed_params[key] = value
-                    
+
             kwargs["params"] = processed_params
         else:
             # For non-GET requests, send payload as JSON in the body
             kwargs["json"] = payload
-        
+
         return self._request(method, endpoint, **kwargs)
-        
+
     def _process_response(self, response):
         """Process API response and handle errors."""
         data = response.json()
         result = data
 
-        if data and type(data) == dict:
+        if data and isinstance(data, dict):
             format = data.get("format", "")
             if format == "base64":
                 content = base64.b64decode(data.get("content", "")).decode("utf-8")
@@ -79,10 +80,10 @@ class ApiClient:
                     message = f"{err['message']}"
                 error_messages.append(message)
             raise PassworkResponseError(str(error_messages), response.url, response.request.method, response.status_code)
-            
+
         response.raise_for_status()
         return result
-        
+
     def _request(self, method, endpoint, **kwargs):
         """Helper method to send HTTP requests and handle responses."""
         url = f"{self.host}{endpoint}"
@@ -96,11 +97,18 @@ class ApiClient:
             # Don't overwrite custom master key hash if provided
             if "X-Master-Key-Hash" not in kwargs["headers"]:
                 kwargs["headers"]["X-Master-Key-Hash"] = self.master_key_hash
-        
-        verify_ssl = kwargs.pop("verify", self.verify_ssl)
-        
+
         # For the actual request, add verify parameter
-        kwargs["verify"] = verify_ssl
+        verify_ssl = kwargs.pop("verify", self.verify_ssl)
+
+        if verify_ssl is not None:
+            if verify_ssl is True:
+                default_paths = ssl.get_default_verify_paths()
+                # requests expects verify to be bool or path-like, not DefaultVerifyPaths.
+                kwargs["verify"] = default_paths.cafile or default_paths.capath or True
+            else:
+                kwargs["verify"] = verify_ssl
+
         response = requests.request(method, url, **kwargs)
         result = self._process_response(response)
 
@@ -121,14 +129,14 @@ class ApiClient:
             else:
                 # Auto refresh is disabled
                 raise PassworkError("Access token expired", "token_expired")
-            
+
         return result
-    
+
     def set_tokens(self, access_token, refresh_token):
         """Set the API access and refresh tokens directly."""
         self.access_token = access_token
         self.refresh_token = refresh_token
-        
+
     def update_tokens(self):
         """Refresh the access token using the refresh token."""
         if not self.refresh_token:
@@ -137,7 +145,7 @@ class ApiClient:
         # Store current token to avoid recursion
         current_token = self.access_token
         refresh_token_copy = self.refresh_token
-        
+
         # Temporarily remove tokens to prevent _request from trying to refresh again
         self.access_token = None
         self.refresh_token = None
@@ -151,16 +159,16 @@ class ApiClient:
         # Use requests directly since we're bypassing the normal API client flow
         response = requests.post(
             url,
-            json = {"refreshToken": refresh_token_copy},
-            headers = headers,
-            verify = self.verify_ssl
+            json={"refreshToken": refresh_token_copy},
+            headers=headers,
+            verify=self.verify_ssl
         )
 
         # Process the response manually
         if response.status_code >= 400:
             # Handle error
             raise PassworkError(f"Failed to refresh token: {response.status_code}", "refresh_token_failed")
-        
+
         result = self._process_response(response)
 
         self.access_token = result["accessToken"]
@@ -168,5 +176,50 @@ class ApiClient:
 
         if hasattr(self, 'session_path') and self.session_path and hasattr(self, 'save_session'):
             self.save_session(self.session_path, self.session_encryption_key)
-            
+
         return result
+
+    def update_access_token(self):
+
+        if not self.access_token:
+            raise PassworkError("No access token available", "no_access_token")
+
+        result = self.request_update_token("/v1/sessions/refresh-access-token", {"accessToken": self.access_token})
+
+        self.access_token = result["accessToken"]
+
+        if hasattr(self, 'session_path') and self.session_path and hasattr(self, 'save_session'):
+            self.save_session(self.session_path, self.session_encryption_key)
+
+        return result
+
+    def update_refresh_token(self):
+
+        if not self.refresh_token:
+            raise PassworkError("No refresh token available", "no_refresh_token")
+
+        result = self.request_update_token("/v1/sessions/refresh-refresh-token", {"refreshToken": self.refresh_token})
+
+        self.refresh_token = result["refreshToken"]
+
+        if hasattr(self, 'session_path') and self.session_path and hasattr(self, 'save_session'):
+            self.save_session(self.session_path, self.session_encryption_key)
+
+        return result
+
+    def request_update_token(self, endpoint: str, data: dict, headers: dict | None = None):
+        headers = headers or {}
+
+        url = f"{self.host}/api{endpoint}"
+
+        response = requests.post(
+            url,
+            json=data,
+            headers=headers,
+            verify=self.verify_ssl
+        )
+
+        if response.status_code >= 400:
+            raise PassworkError(f"Failed to update token: {response.status_code}", "update_token_failed")
+
+        return self._process_response(response)

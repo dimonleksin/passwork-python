@@ -1,4 +1,5 @@
-from ..crypto import generate_user_password, get_master_key, get_hash, generate_rsa_keys
+from ..crypto import generate_user_password, get_master_key, get_hash, generate_user_rsa_keys
+
 
 class User:
     def get_user_public_key(self, user_id: str):
@@ -21,7 +22,7 @@ class User:
 
             user_data["masterKeyHash"] = get_hash(master_key)
             user_data["masterKeyOptions"] = master_key_data["masterKeyOptions"]
-            user_data["keys"] = generate_rsa_keys(master_password)
+            user_data["keys"] = generate_user_rsa_keys(master_password)
 
         response = self.call("POST", "/api/v1/users", user_data)
 

@@ -20,30 +20,29 @@ class PassworkClient(ApiClient, MasterKeyManager, SessionManager, Item, Vault, I
     """
     A client for interacting with the Passwork API.
     """
-    def __init__(self, host: str, verify_ssl: bool = True, auto_refresh: bool = False):
+    def __init__(self, host: str, verify_ssl: bool | str = True, auto_refresh: bool = False):
         if not host:
             raise PassworkError("Host must be specified", "host_not_specified")
-
         # Initialize ApiClient variables
         self.host = host.rstrip('/')  # Ensure no trailing slash
         self.verify_ssl = verify_ssl
 
-        # Disable SSL warnings only if verify_ssl is explicitly set to False
-        if not self.verify_ssl:
+        # Disable SSL warnings only when verification is explicitly disabled.
+        if self.verify_ssl is False:
             urllib3.disable_warnings(InsecureRequestWarning)
 
         self.access_token = None
         self.refresh_token = None
         self.master_key_hash = None
         self.auto_refresh = auto_refresh
-        
+
         # Initialize MasterKeyManager variables
         self.master_key = None
         self.user_private_key = None
         self.user_public_key = None
         self.mk_options = None
         self.is_encrypt = False
-        
+
         # Initialize SessionManager variables
         self.session_path = None
         self.session_encryption_key = None

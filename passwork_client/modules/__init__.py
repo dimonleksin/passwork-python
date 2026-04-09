@@ -1,5 +1,4 @@
-# This file is necessary for proper module imports 
-
+# This file is necessary for proper module imports
 from .api_client import ApiClient
 from .master_key import MasterKeyManager
 from .session import SessionManager
@@ -15,15 +14,15 @@ from .vault_type import VaultType
 from .app import App
 
 __all__ = [
-    'ApiClient', 
-    'MasterKeyManager', 
+    'ApiClient',
+    'MasterKeyManager',
     'SessionManager',
     'Item',
     'Vault',
     'Inbox',
     'User',
     'Shortcut',
-    'Snapshot'
+    'Snapshot',
     'Batch',
     'Link',
     'VaultType',

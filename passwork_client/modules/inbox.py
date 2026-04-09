@@ -1,6 +1,7 @@
 from ..utils import decrypt_item, decrypt_and_save_item_attachment
 from ..crypto import rsa_decrypt
 
+
 class Inbox:
     """
     A client for interacting with the Passwork Inbox API.
@@ -12,7 +13,7 @@ class Inbox:
         if self.is_encrypt:
             vault_password = rsa_decrypt(inbox_item["inbox"]["keyEncrypted"], self.user_private_key).decode("utf-8")
             self._decrypt_inbox_password(inbox_item, vault_password)
-        
+
         return inbox_item
 
     def _decrypt_inbox_password(self, password: dict, encrypted_key: str):

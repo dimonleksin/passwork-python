@@ -1,6 +1,5 @@
 import os
 import base64
-import re
 import hashlib
 import hmac
 import time
@@ -8,12 +7,15 @@ import struct
 from pathlib import Path
 from .crypto import encrypt_aes, generate_string, decrypt_aes, rsa_decrypt
 
+
 def is_valid_totp(totp_value: str):
     return True
+
 
 def validate_item_customs(customs: list):
     if any(f["type"] == "totp" and not is_valid_totp(f["value"]) for f in customs):
         raise Exception({"code": "invalidTotpFormat"})
+
 
 def encrypt_item_customs(custom_fields: dict, encryption_key: str):
     encrypted_fields = []
@@ -26,6 +28,7 @@ def encrypt_item_customs(custom_fields: dict, encryption_key: str):
                 encrypted_custom[field] = encrypt_aes(value, encryption_key)
         encrypted_fields.append(encrypted_custom)
     return encrypted_fields
+
 
 def format_item_attachments(attachments: list, encryption_key: str):
     result = []
@@ -43,6 +46,7 @@ def format_item_attachments(attachments: list, encryption_key: str):
             }
         )
     return result
+
 
 def encrypt_item_attachment(buffer: bytes, encryption_key: str):
     if len(buffer) > 1024 * 1024 * 5:
@@ -65,23 +69,28 @@ def encrypt_item_attachment(buffer: bytes, encryption_key: str):
         "hash": computed_hash,
     }
 
+
 def encode_attachment_file(data: bytes, encryption_key: str | None = None):
     if encryption_key is None:
         return base64.b64encode(base64.b64encode(data)).decode()
     else:
         return encrypt_aes(base64.b64encode(data), encryption_key, True)
 
+
 def get_string_from_blob(blob: bytes):
     result = "".join([chr(byte) for byte in blob])
     return result
+
 
 def read_file(filepath: str):
     with open(filepath, "rb") as file:
         return file.read()
 
+
 def get_encryption_key(vault_master_key_encrypted: str, key_encrypted: str, user_private_key: str) -> str:
     vault_master_key = rsa_decrypt(vault_master_key_encrypted, user_private_key).decode()
     return decrypt_aes(key_encrypted, vault_master_key)
+
 
 def decrypt_item(password_encrypted: str, encrypted_key: str) -> str:
     if encrypted_key:
@@ -89,8 +98,10 @@ def decrypt_item(password_encrypted: str, encrypted_key: str) -> str:
     else:
         return base64.b64decode(password_encrypted.encode()).decode('utf-8')
 
+
 def decrypt_item_attachments(attachment: dict, encrypted_key: str) -> str:
     return decrypt_aes(attachment["encryptedKey"], encrypted_key)
+
 
 def decrypt_item_customs(custom: dict, password_key: str):
     if password_key:
@@ -101,6 +112,7 @@ def decrypt_item_customs(custom: dict, password_key: str):
         custom["name"] = base64.b64decode(custom["name"].encode()).decode('utf-8')
         custom["type"] = base64.b64decode(custom["type"].encode()).decode('utf-8')
         custom["value"] = base64.b64decode(custom["value"].encode()).decode('utf-8')
+
 
 def decrypt_and_save_item_attachment(attachment: dict, encrypted_key: str, download_path: str):
     if not attachment:
@@ -120,6 +132,7 @@ def decrypt_and_save_item_attachment(attachment: dict, encrypted_key: str, downl
 
     save_attachment(byte_data, attachment["name"], download_path)
 
+
 def decode_file(data: str, encrypted_key: str | None = None):
     if not encrypted_key:
         decoded_data = base64.b64decode(base64.b64decode(data))
@@ -127,13 +140,15 @@ def decode_file(data: str, encrypted_key: str | None = None):
         decoded_data = base64.b64decode(decrypt_aes(data, encrypted_key, is_bytes=True))
     return decoded_data
 
+
 def save_attachment(byte_data_content: bytes, filename: str, download_path: str):
     Path(download_path).mkdir(parents=True, exist_ok=True)
     download_path = os.path.join(download_path, filename)
     with open(download_path, "wb") as file:
         file.write(byte_data_content)
 
-def generate_totp(secret: str, algorithm = hashlib.sha1, interval=30, digits=6):
+
+def generate_totp(secret: str, algorithm: object = hashlib.sha1, interval=30, digits=6):
     # Decode the base32 secret to bytes
     # Standard base32 decoding requires padding, which is assumed here.
     # For a robust solution, consider a more complete base32 decoder.
@@ -156,6 +171,7 @@ def generate_totp(secret: str, algorithm = hashlib.sha1, interval=30, digits=6):
     # Generate the TOTP code
     totp_code = str(truncated_hash % (10 ** digits)).zfill(digits)
     return totp_code
+
 
 def generate_totp_by_url(uri: str):
     # Secret (to be filled in later)
@@ -196,46 +212,49 @@ def generate_totp_by_url(uri: str):
 
     raise ValueError("Not a supported OTP type")
 
+
 def parse_url(url: str):
-     scheme = None
-     netloc = None
-     path = None
-     query = None
-     fragment = None
+    scheme = None
+    netloc = None
+    path = None
+    query = None
+    fragment = None
 
-     # Extract scheme
-     scheme_end = url.find("://")
-     if scheme_end != -1:
-         scheme = url[:scheme_end]
-         url = url[scheme_end + 3:]
+    # Extract scheme
+    scheme_end = url.find("://")
+    if scheme_end != -1:
+        scheme = url[:scheme_end]
+        url = url[scheme_end + 3:]
 
-     # Extract fragment
-     fragment_start = url.find("#")
-     if fragment_start != -1:
-         fragment = url[fragment_start + 1:]
-         url = url[:fragment_start]
+    # Extract fragment
+    fragment_start = url.find("#")
+    if fragment_start != -1:
+        fragment = url[fragment_start + 1:]
+        url = url[:fragment_start]
 
-     # Extract query
-     query_start = url.find("?")
-     if query_start != -1:
-         query = url[query_start + 1:]
-         url = url[:query_start]
+    # Extract query
+    query_start = url.find("?")
+    if query_start != -1:
+        query = url[query_start + 1:]
+        url = url[:query_start]
 
-     # Extract netloc and path
-     path_start = url.find("/")
-     if path_start != -1:
-         netloc = url[:path_start]
-         path = url[path_start:]
-     else:
-         netloc = url # If no path, the rest is netloc
+    # Extract netloc and path
+    path_start = url.find("/")
+    if path_start != -1:
+        netloc = url[:path_start]
+        path = url[path_start:]
+    else:
+        # If no path, the rest is netloc
+        netloc = url
 
-     return {
-         "scheme": scheme,
-         "netloc": netloc,
-         "path": path,
-         "query": query,
-         "fragment": fragment,
-     }
+    return {
+        "scheme": scheme,
+        "netloc": netloc,
+        "path": path,
+        "query": query,
+        "fragment": fragment,
+    }
+
 
 def parse_query(query_string):
     """
@@ -251,13 +270,14 @@ def parse_query(query_string):
 
     for pair in pairs:
         # Split by '=' to separate key and value
-        parts = pair.split('=', 1)  # Use 1 to handle values with '='
+        # Use 1 to handle values with '='
+        parts = pair.split('=', 1)
         key = parts[0]
         value = parts[1] if len(parts) > 1 else ''
 
         # Basic URL decoding (you might need a more robust implementation for complex cases)
-        key = key.replace('+', ' ').replace('%20', ' ') # Example for space
-        value = value.replace('+', ' ').replace('%20', ' ') # Example for space
+        key = key.replace('+', ' ').replace('%20', ' ')
+        value = value.replace('+', ' ').replace('%20', ' ')
 
         params[key] = value
     return params

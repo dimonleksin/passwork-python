@@ -1,5 +1,6 @@
 from ..utils import get_encryption_key, decrypt_and_save_item_attachment
 
+
 class Snapshot:
     def get_snapshot(self, item_id: str, snapshot_id: str):
         snapshot_data = self.call("GET", f"/api/v1/items/{item_id}/snapshot/{snapshot_id}")
@@ -20,7 +21,7 @@ class Snapshot:
         return snapshot_data
 
     def get_snapshot_attachment(self, snapshot_id: str, attachment_id: str):
-         return self.call("GET", f"/api/v1/snapshots/{snapshot_id}/attachment/{attachment_id}")
+        return self.call("GET", f"/api/v1/snapshots/{snapshot_id}/attachment/{attachment_id}")
 
     def download_snapshot_attachments(self, snapshot: dict, download_path: str):
         attachments = snapshot.get("attachments")

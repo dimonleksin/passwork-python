@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
-import os
-import re
 import sys
-import json
-import subprocess
 from .base import PassworkCommand, ItemBaseCommand
 from passwork_client.utils import generate_totp, generate_totp_by_url
+
 
 class GetCommandStrategy(PassworkCommand, ItemBaseCommand):
 

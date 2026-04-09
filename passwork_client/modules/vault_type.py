@@ -1,5 +1,6 @@
 from ..crypto import rsa_encrypt, b64encode
 
+
 class VaultType:
 
     def get_vault_types(self):

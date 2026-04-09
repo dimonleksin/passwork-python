@@ -1,6 +1,7 @@
 from ..crypto import encrypt_aes
 from ..utils import get_encryption_key
 
+
 class Shortcut:
     """
     A client for interacting with the Passwork Shortcut API.
@@ -40,8 +41,10 @@ class Shortcut:
         password = shortcut["password"]
         return self.download_item_attachment(password, download_path)
 
-    def search_shortcut(self, query: str = None, tags: list[str] = None, color_codes: list[int] = None,
-                       vault_ids: list[str] = None, folder_ids: list[str] = None):
+    def search_shortcut(
+        self, query: str = None, tags: list[str] = None, color_codes: list[int] = None,
+        vault_ids: list[str] = None, folder_ids: list[str] = None
+    ):
         payload = {}
         if query is not None:
             payload["query"] = query

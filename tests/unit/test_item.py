@@ -1,99 +1,118 @@
-import pytest
-import json
-import os
-from unittest.mock import patch, MagicMock
-from passwork_client import PassworkClient
-from passwork_client.crypto import decrypt_aes, rsa_decrypt
-from passwork_client.utils import get_encryption_key
+from base import Base
 
-class TestItem:
-    
-    @pytest.fixture
-    def real_mock_item_data(self, load_mock_data):
-        """Load real item mock data from saved response."""
-        return load_mock_data('item_response.json')
-    
-    @pytest.fixture
-    def real_mock_keys_data(self, load_mock_data):
-        """Load real user keys mock data from saved response."""
-        return load_mock_data('user_keys_response.json')
-        
-    def test_get_item_with_real_mock_data(self, mock_encrypted_client, real_mock_item_data, real_mock_keys_data):
+
+class TestItem(Base):
+
+    def test_get_encrypted_item(self, mock_encrypted_client):
         """
-        Test get_item method using real mock data saved from API responses.
-        This test verifies that the item object is properly decrypted and 
-        matches the expected result.
+            Test get_item method using real mock data saved from API responses.
+            This test verifies that the item object is properly decrypted and
+            matches the expected result.
         """
         # Setup mock_encrypted_client to use real mock data
         mock_encrypted_client._request.side_effect = [
-            real_mock_item_data  # Return mock item data on request
+            self.load_encrypted_item_data()  # Return mock item data on request
         ]
-        
-        # Setup client with actual encryption keys from mock data
-        mock_encrypted_client.master_key = "9XwaDw2uumh15+1KMmjIHqZtSQqBb28wiOOdmM376SSGxViRD833HTklq31dJmo7JUrB8gIgY3l8AtWqDKmEog=="
-        mock_encrypted_client.user_private_key = decrypt_aes(
-            real_mock_keys_data["keys"]["privateEncrypted"], 
-            mock_encrypted_client.master_key
-        )
-        mock_encrypted_client.user_public_key = real_mock_keys_data["keys"]["public"]
-        
+
         # Call the get_item method with the real item ID
-        item_id = "673c4da03779c24fd60a80b2"
+        item_id = self.encrypted_item_id
         item = mock_encrypted_client.get_item(item_id)
-        
+
         # Verify the method made the correct request
         mock_encrypted_client._request.assert_called_once()
         args, kwargs = mock_encrypted_client._request.call_args
         assert args == ("GET", f"/api/v1/items/{item_id}")
         assert kwargs.get("params", {}) == {}
-        
         # Expected item object after decryption
-        expected_item = {
-            'id': '673c4da03779c24fd60a80b2',
-            'vaultId': '66f2d2efc8d8ccee4d033a84',
-            'folderId': None,
-            'passwordEncrypted': 'amt4cwv48xb6pp1h71b76xjhahr3amhg71tpmwjf6t468tjr8dn6gwk9emumyphb858mpm1t993kedv6e5r5jhb28xnk6d1f6t4pygr',
-            'keyEncrypted': 'amt4cwv48xb6pp1h71aq2ubea5p36ujaan1mpcv7egu6yjb1e9242jkab94qguknd964mw29exq3jtaf6dvpmnkd8dwpgjjpe1tm2xjb91j7jnujdhj6mcuc6tc62gj66gukgwv9a4yku',
-            'customs': [
-                {'type': 'text', 'value': 'custom-login', 'name': 'Custom name'},
-                {'type': 'password', 'value': 'lANeOlEzJ9f2isl$60=q', 'name': 'Custom password'},
-                {'type': 'totp', 'value': 'abc', 'name': 'Custom TOTP'}
-            ],
+        expected_item = self.get_expected_item()
+        self.assert_expected_item(expected_item, item)
+
+    def test_get_item(self, mock_client):
+        """
+        Test get_item method using real mock data saved from API responses.
+        """
+
+        mock_client._request.side_effect = [
+            self.load_item_data()  # Return mock item data on request
+        ]
+
+        item_id = self.item_id
+        item = mock_client.get_item(item_id)
+
+        # Verify the method made the correct request
+        mock_client._request.assert_called_once()
+        args, kwargs = mock_client._request.call_args
+        assert args == ("GET", f"/api/v1/items/{item_id}")
+        assert kwargs.get("params", {}) == {}
+
+        # Expected item object after decryption
+        expected_item = self.get_expected_item({
+            'id': '691d7dc8decc3f3da50349d2',
+            'vaultId': '6821d92cb9d649035b0894e2',
+            'passwordEncrypted': 'a3p3dWdSXVZILTlLRjA6fmQ4aCU=',
+            'keyEncrypted': None,
             'attachments': [
                 {
-                    'id': '67f7ed34077a9f28a3086cc2',
-                    'encryptedKey': 'amt4cwv48xb6pp1h5dgngmurah442xapc8rmjkutdww72u1qdctmenum6mnmmv226du3gxap6xgqan9b6hcqgvhjcdcpcu1pf9jmcw1fet272na38cv4mhu4d585cnbjcn9q8u3p9n254ru9d16mcv31ad452v3q9d3mej1h8xn64e1g65bpaaup71jk0tvp5dkq8kv69mumcvkmewtmydba6dx52bvadwtpwjuj75amyv2m6hu6rnv9f9upmp3e6n1n0k23ddq30cufamyg',
+                    'id': '691d7dc8decc3f3da50349d3',
+                    'encryptedKey': 'YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=',
                     'name': 'test.txt'
                 }
             ],
-            'name': 'name-test',
-            'login': 'login-test',
-            'url': 'https://example.com',
-            'description': 'notes test',
-            'tags': ['test', 'test-2'],
-            'isDeleted': False,
-            'color': 5,
-            'isFavorite': True,
-            'vaultMasterKeyEncrypted': 'U9HkOZpHO6XBOK0y78wVG2BDtEJqYyP2RgdOqoHj3ELcpgsFDH+AYihvsd+4d2p5yoer8vNJUh9T6XN1AjrFjNTYyivDYWnE63J5fF2qgdHvsgiDI5My5quWIMxFMgrxopEjcnwbeWoSlR624Is8tKodfYcXlzplOW+ZxQcp8Sc=',
-            'password': 'kzwugR]VH-9KF0:~d8h%'
-        }
-        
-        # Verify the item object is correctly decrypted
-        # First, check that the password field is decrypted
+            'vaultMasterKeyEncrypted': None,
+            'urls': ['https://example.com', 'https://example.local'],
+        })
+
+        self.assert_expected_item(expected_item, item)
+
+    def assert_expected_item(self, expected_item: dict, item: dict):
+
         assert 'password' in item, "Password field should be present in the result"
         assert item['password'] == expected_item['password'], "Decrypted password doesn't match expected value"
-        
+
         # Check that the customs fields are decrypted
         assert len(item['customs']) == len(expected_item['customs']), "Number of customs fields doesn't match"
         for i, custom in enumerate(item['customs']):
             assert custom['name'] == expected_item['customs'][i]['name'], f"Custom field name {i} doesn't match"
             assert custom['value'] == expected_item['customs'][i]['value'], f"Custom field value {i} doesn't match"
             assert custom['type'] == expected_item['customs'][i]['type'], f"Custom field type {i} doesn't match"
-        
+
         # Check basic fields
         assert item['name'] == expected_item['name'], "Name field doesn't match"
         assert item['login'] == expected_item['login'], "Login field doesn't match"
         assert item['description'] == expected_item['description'], "Description field doesn't match"
-        
+
         # Check that the entire item object matches the expected result
-        assert item == expected_item, "Decrypted item object doesn't match expected value" 
+        assert item == expected_item, "Decrypted item object doesn't match expected value"
+
+    def get_expected_item(self, merge: dict = {}):
+        return {
+            'id': '691c354719feeca0c603c2f2',
+            'vaultId': '691c1ec0569fd4826e098512',
+            'folderId': None,
+            'passwordEncrypted': 'amt4cwv48xb6pp1h71wmyebk8nn7mw3r6hd3gdup998njy9tc5mp6pj375d48dka9x0p4w34eru58hjgdwrpjrudd4upaubt71x7gx0',
+            'keyEncrypted': 'amt4cwv48xb6pp1h5wtq2ca2f0rmcphh5xw5em9h85mp6hu89mt64w1p9ta7mrbuddu6wcud5ctmuh9m5xc5md2t8995mmv1amt54wu171x58wk9d50nchb169d6pyj9f92m2wvp9nj4wju48du3gvuqdtr7maujatjp2j2ue14m6kv2e1h72y1f8twn2wbg9n63cgj4f5j6upht8xbq8vbq7592ydjk9humwn1pe9p6wy3e8t344ubra5t38tk398qpmtbb8ncqmwatamyg',
+            'customs': [
+                {'type': 'text', 'value': 'custom-login', 'name': 'Custom name'},
+                {'type': 'password', 'value': 'lANeOlEzJ9f2isl$60=q', 'name': 'Custom password'},
+                {'type': 'totp', 'value': 'RNYGXTPKMNW53KSCMLCMMYQ3Z6', 'name': 'Custom TOTP'}
+            ],
+            'attachments': [
+                {
+                    'id': '691c354719feeca0c603c2f3',
+                    'encryptedKey': 'amt4cwv48xb6pp1h5dq4em1kdx7p8kbg8xrmuxug5x430hv7b1cpmwa4d9aqggu68h97mtkh5x75ggk4dxkm4c2461r4rk9bd5anec38b1j50gbpcx1mwt38a524an2gf55pyn9mf53q0hkmb9d42rbncmtq8kv1cd5qehahf5jmpwtbc5unmdbc6gqk0j3nanp38e1ta9342gtmch34ycv6ddm5ev9nehrq8h2a6gu66htj8dp6au9qa1npcdb8f1cpayk9dnukauupa4yg',
+                    'name': 'test.txt'
+                }
+            ],
+            'name': 'name-test',
+            'login': 'login-test',
+            'url': 'https://example.com',
+            'urls': ['https://example.com', 'https://example.local'],
+            'description': 'notes test',
+            'tags': ['test', 'test-2'],
+            'fieldsOrder': None,
+            'isDeleted': False,
+            'color': 5,
+            'isFavorite': True,
+            'vaultMasterKeyEncrypted': 'asXArz2xu5bRbl+vM+NMtHNvtharYoy1ny4Z6WwoVEeu9Cn1BANR3FK+B//DEOXJHIHOER//LdCo8jCibMJcwXcOTwYtG+zUZ4A50akohl1g3tZMKKR/Fp8rQmr1f37CG1XmpNbMBP5z5+uQOWRni7Ov8av0WSxjYAJsa5EojaU=',
+            'password': 'kzwugR]VH-9KF0:~d8h%'
+        } | merge

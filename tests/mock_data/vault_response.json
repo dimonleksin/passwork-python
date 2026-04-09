@@ -1,0 +1,43 @@
+{
+  "id": "6821d92cb9d649035b0894e2",
+  "name": "Test",
+  "typeId": "685cfa5a3d0ba75d2f041972",
+  "permissions": [
+    "directory:read",
+    "directory:edit",
+    "directory:copy",
+    "directory:move",
+    "directory:delete",
+    "directory:export",
+    "directory:activityLog:read",
+    "directory:security:analyse",
+    "directory:access:read",
+    "directory:access:manage",
+    "vault:delete",
+    "vault:leave",
+    "object:createAndImport",
+    "item:read",
+    "item:edit",
+    "item:delete",
+    "item:move",
+    "item:copy",
+    "item:snapshot:read",
+    "item:activityLog:read",
+    "shortcut:create",
+    "inboxItem:createForReading",
+    "inboxItem:createForEditing",
+    "link:create",
+    "item:additionalAccess:read",
+    "item:additionalAccess:manage",
+    "bin:manage"
+  ],
+  "masterKeyEncrypted": null,
+  "isVisible": true,
+  "directoryAccess": {
+    "isViewingAccess": false,
+    "access": "admin",
+    "accessName": "Administrator"
+  },
+  "canLeaveVault": null,
+  "canChangeVaultType": null
+}

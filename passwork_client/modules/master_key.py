@@ -3,6 +3,7 @@ import base64
 from pbkdf2 import PBKDF2
 from ..crypto import decrypt_aes
 
+
 class MasterKeyManager:
     """
     Handles master key and password management, encryption settings.
@@ -28,12 +29,13 @@ class MasterKeyManager:
             # Set the derived master key
             self.set_master_key(derived_master_key)
 
-        except Exception as e:
+        except Exception:
             # Handle errors during option fetching or key derivation
-            self.set_master_key(None) # Ensure encryption is disabled on error
+            # Ensure encryption is disabled on error
+            self.set_master_key(None)
             # Simply propagate the exception
             raise
-            
+
     def set_master_key(self, master_key):
         """
         Set the master key directly, update encryption status, and fetch/decrypt user keys.
@@ -59,7 +61,7 @@ class MasterKeyManager:
             self.user_public_key = keys["public"]
             # Successfully set keys, enable encryption
             self.is_encrypt = True
-        except Exception as e:
+        except Exception:
             # Failed to fetch/decrypt keys, likely invalid master_key
             # Revert changes and disable encryption
             self.master_key = None
@@ -68,4 +70,4 @@ class MasterKeyManager:
             self.user_public_key = None
             self.is_encrypt = False
             # Simply propagate the exception
-            raise 
+            raise

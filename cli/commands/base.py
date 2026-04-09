@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from abc import ABC, abstractmethod
 
+
 class PassworkCommand(ABC):
     """
     Abstract base class for Passwork CLI command strategies.
@@ -9,11 +10,9 @@ class PassworkCommand(ABC):
     def execute(self, client, args):
         """
         Execute the command strategy.
-        
         Args:
             client (PassworkClient): Initialized Passwork client
             args (Namespace): Command line arguments
-            
         Returns:
             int: Exit code
         """
@@ -30,17 +29,24 @@ class PassworkCommand(ABC):
             "--token": {"help": "Passwork access token"},
             "--refresh-token": {"help": "Passwork refresh token"},
             "--master-key": {"help": "Passwork master key for decryption"},
-            "--no-ssl-verify": {"action": "store_true", "help": "Disable SSL certificate verification"},
+            "--no-ssl-verify": {
+                "action": "store_true",
+                "help": "Disable SSL certificate verification. DEPRECATED: use --ssl-verify (boolean mode)",
+            },
+            "--ssl-verify": {
+                "help": "Enable SSL verification (or provide CA bundle path)",
+                "nargs": "?",
+                "const": True,
+            },
         }
+
 
 class ItemBaseCommand:
     def _get_password(self, client, args):
         """
         Get password based on the provided arguments.
-
         Strategy: If password_id is provided, get a single password
         If shortcut_id is provided, get a single password
-
         Returns:
             dict: password object or shortcut object
         """

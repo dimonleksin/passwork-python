@@ -1,5 +1,4 @@
 import os
-import random
 import hashlib
 import binascii
 from base64 import b64encode, b64decode
@@ -11,7 +10,6 @@ from cryptography.hazmat.backends import default_backend
 
 from .base32 import base32
 import secrets
-
 
 __all__ = [
     "encrypt_aes",
@@ -62,7 +60,7 @@ def encrypt_aes(message: str | bytes, passphrase: str, is_bytes: bool = False):
         # add salt to ciphertext
         encrypted_data = b"Salted__" + salt + ciphertext
     else:
-        encrypted_data =  message.encode()
+        encrypted_data = message.encode()
         return b64encode(encrypted_data).decode('utf-8')
 
     encrypted_data_b64 = b64encode(encrypted_data)
@@ -100,18 +98,22 @@ def generate_string(length: int = 32):
     possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@!"
     return get_random_string(length, possible)
 
+
 def generate_salt(length: int = 32):
     possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@!"
     return get_random_string(length, possible)
+
 
 def generate_key():
     KEY_LENGTH = 100
     possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@!"
     return get_random_string(KEY_LENGTH, possible)
 
+
 def generate_password(length: int = 32):
     possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^"
     return get_random_string(length, possible)
+
 
 def generate_user_password(length: int = 32, complexity: dict = {}):
     digits = "0123456789"
@@ -140,8 +142,10 @@ def generate_user_password(length: int = 32, complexity: dict = {}):
 
     return password
 
+
 def get_random_string(length: int = 32, possible: str = ""):
     return "".join(secrets.choice(possible) for _ in range(length))
+
 
 def get_master_key(mk_options: dict, master_password: str):
 
@@ -149,7 +153,6 @@ def get_master_key(mk_options: dict, master_password: str):
     iterations = int(mk_options["iterations"]) if mk_options.get("iterations") else 300000
     bytes_dklen = int(mk_options["bytes"]) if mk_options.get("bytes") else 64
     digest = mk_options["digest"] if mk_options.get("digest") else "sha256"
-
 
     # get pbkdf master key
     dk = hashlib.pbkdf2_hmac(digest, master_password.encode(), salt.encode(), iterations, dklen=bytes_dklen)
@@ -168,6 +171,7 @@ def get_request_headers(token: str, master_key: str, use_master_password: bool):
         master_key_hash = hashlib.sha256(master_key.encode()).hexdigest()
         headers["X-Master-Key-Hash"] = master_key_hash
     return headers
+
 
 def get_hash(str: str, func: str | None = None):
     if not str:
@@ -196,13 +200,14 @@ def rsa_decrypt(data, private_key):
                 label=None
             )
         )
-    except Exception as e:
+    except Exception:
         decrypted_data = private_key.decrypt(
             b64decode(data),
             padding_rsa.PKCS1v15()
         )
 
     return decrypted_data
+
 
 def rsa_encrypt(data, public_key):
     public_key = serialization.load_pem_public_key(
@@ -218,18 +223,19 @@ def rsa_encrypt(data, public_key):
                 label=None
             )
         )
-    except Exception as e:
+    except Exception:
         encrypted_data = public_key.encrypt(
             data.encode(),
             padding_rsa.PKCS1v15()
         )
     return encrypted_data
 
-def generate_rsa_keys(masterKey: str):
+
+def generate_rsa_keys():
     private_key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=2048,
-        )
+        public_exponent=65537,
+        key_size=2048,
+    )
 
     private_pem = private_key.private_bytes(
         encoding=serialization.Encoding.PEM,
@@ -243,5 +249,12 @@ def generate_rsa_keys(masterKey: str):
         format=serialization.PublicFormat.SubjectPublicKeyInfo
     )
 
-    private_encrypted = encrypt_aes(private_pem, masterKey, True)
-    return {"public": public_pem.decode('utf-8'), "privateEncrypted": private_encrypted}
+    return {"public": public_pem.decode('utf-8'), "private": private_pem.decode('utf-8')}
+
+
+def generate_user_rsa_keys(master_key: str):
+
+    keys = generate_rsa_keys()
+
+    private_encrypted = encrypt_aes(keys["private"].encode(), master_key, True)
+    return {"public": keys["public"], "privateEncrypted": private_encrypted}

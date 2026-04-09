@@ -1,6 +1,7 @@
 from ..crypto import rsa_decrypt, rsa_encrypt, get_hash, b64encode, generate_key, generate_salt
 from ..exceptions import PassworkError
 
+
 class Vault:
 
     def create_vault(self, vault_name: str, type_id: str = None):

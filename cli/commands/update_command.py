@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
-import os
-import re
 import sys
-import json
-import subprocess
 from .base import PassworkCommand, ItemBaseCommand
+
 
 class UpdateCommandStrategy(PassworkCommand, ItemBaseCommand):
 
@@ -16,8 +13,7 @@ class UpdateCommandStrategy(PassworkCommand, ItemBaseCommand):
             if not password:
                 print("Error: No password found", file=sys.stderr)
                 return 1
-
-            #update password
+            # update password
             updated_data = self.parse_args(vars(args))
 
             updated_data = self.prepare_update_data(updated_data, password)
@@ -35,7 +31,7 @@ class UpdateCommandStrategy(PassworkCommand, ItemBaseCommand):
     def prepare_update_data(self, data, password):
         filtered_results = {}
         for key, value in data.items():
-            if value != None:
+            if value is not None:
                 filtered_results[key] = value
 
         if data["customs"]:
@@ -69,7 +65,7 @@ class UpdateCommandStrategy(PassworkCommand, ItemBaseCommand):
         parse_args["description"] = args.get("description", None)
         parse_args["customs"] = args["customs"] if args["customs"] else None
 
-        if args["tags"] or args["tags"] != None:
+        if args["tags"] or args["tags"] is not None:
             tags = args["tags"]
             if ',' in tags:
                 tag_list = [tag.strip() for tag in tags.split(',')]
